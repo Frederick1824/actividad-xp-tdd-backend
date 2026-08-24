@@ -17,6 +17,16 @@ export function manejarSolicitud(
     return;
   }
 
+  if (solicitud.method === "GET" && solicitud.url === "/hora") {
+    respuesta.writeHead(200);
+    respuesta.end(
+      JSON.stringify({
+        hora: new Date().toISOString()
+      })
+    );
+    return;
+  }
+
   respuesta.writeHead(404);
   respuesta.end(
     JSON.stringify({
