@@ -4,7 +4,7 @@ Esta rama continúa la actividad anterior de backend. En lugar de crear un proye
 
 ## Objetivo
 
-Evolucionar el backend anterior aplicando prácticas de Programación Extrema:
+Evolucionar el backend anterior aplicando prácticas de Programación Extrema: 
 
 - desarrollo incremental;
 - pruebas automatizadas;
