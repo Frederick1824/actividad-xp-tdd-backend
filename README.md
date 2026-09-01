@@ -218,7 +218,17 @@ curl -X PATCH http://localhost:3000/estudiantes/1 \
   -H "Content-Type: application/json" \
   -d '{"correo":"ana.nuevo@universidad.edu"}'
 ```
+## Evidencia de ejecución
 
+### Pruebas automatizadas y validación de tipos
+
+![Pruebas aprobadas](docs/evidencias/tests-ok.png)
+
+Resultado:
+- 8 pruebas aprobadas
+- 0 pruebas fallidas
+- TypeScript sin errores
+  
 ## Conclusión
 
 La actividad muestra la evolución del backend inicial hacia una estructura más organizada, manteniendo la idea central de XP: realizar cambios pequeños, verificables y guiados por pruebas. Los endpoints HTTP, los códigos de estado, la separación de responsabilidades y los criterios de aceptación quedan documentados en el mismo repositorio.
