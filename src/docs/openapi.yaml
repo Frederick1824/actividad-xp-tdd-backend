@@ -34,24 +34,71 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/Pedido'
+              example:
+                data:
+                  id: 1
+                  usuarioId: 1
+                  total: '115000.00'
+                  creadoEn: '2026-09-14T19:17:15.683Z'
+                  usuario:
+                    id: 1
+                    nombre: Federico
+                    email: fede@ejemplo.com
+                  detalles:
+                    - id: 1
+                      pedidoId: 1
+                      productoId: 1
+                      cantidad: 2
+                      precioUnit: '45000.00'
+                    - id: 2
+                      pedidoId: 1
+                      productoId: 2
+                      cantidad: 1
+                      precioUnit: '25000.00'
         '400':
           description: Datos incompletos, productos inválidos o stock insuficiente
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                datosIncompletos:
+                  value:
+                    error:
+                      code: DATOS_INCOMPLETOS
+                      message: usuarioId y productosComprados son obligatorios
+                stockInsuficiente:
+                  value:
+                    error:
+                      code: STOCK_INSUFICIENTE
+                      message: Stock insuficiente para Teclado mecánico
         '404':
           description: Usuario o producto no encontrado
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                usuarioNoEncontrado:
+                  value:
+                    error:
+                      code: USUARIO_NO_ENCONTRADO
+                      message: Usuario no encontrado
+                productoNoEncontrado:
+                  value:
+                    error:
+                      code: PRODUCTO_NO_ENCONTRADO
+                      message: Producto 99 no encontrado
         '500':
           description: Error interno del servidor
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: Ocurrió un error interno
 components:
   schemas:
     ProductoComprado:
@@ -94,7 +141,7 @@ components:
           example: 1
         total:
           type: string
-          example: '12499.90'
+          example: '115000.00'
         creadoEn:
           type: string
           format: date-time
@@ -117,7 +164,5 @@ components:
           properties:
             code:
               type: string
-              example: DATOS_INCOMPLETOS
             message:
               type: string
-              example: usuarioId y productosComprados son obligatorios
