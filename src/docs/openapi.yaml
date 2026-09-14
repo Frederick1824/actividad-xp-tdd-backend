@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: API Backend - Pedidos con Prisma
+  version: 3.0.0
+  description: API de ejemplo para procesar pedidos con Express, TypeScript, PostgreSQL y Prisma ORM.
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+paths:
+  /api/pedidos:
+    post:
+      summary: Procesar un pedido
+      description: Crea un pedido y descuenta stock dentro de una transacción de Prisma.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearPedidoDto'
+            example:
+              usuarioId: 1
+              productosComprados:
+                - productoId: 1
+                  cantidad: 2
+                - productoId: 2
+                  cantidad: 1
+      responses:
+        '201':
+          description: Pedido creado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pedido'
+        '400':
+          description: Datos incompletos, productos inválidos o stock insuficiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario o producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ProductoComprado:
+      type: object
+      required:
+        - productoId
+        - cantidad
+      properties:
+        productoId:
+          type: integer
+          minimum: 1
+          example: 1
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 2
+    CrearPedidoDto:
+      type: object
+      required:
+        - usuarioId
+        - productosComprados
+      properties:
+        usuarioId:
+          type: integer
+          minimum: 1
+          example: 1
+        productosComprados:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ProductoComprado'
+    Pedido:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        usuarioId:
+          type: integer
+          example: 1
+        total:
+          type: string
+          example: '12499.90'
+        creadoEn:
+          type: string
+          format: date-time
+        usuario:
+          type: object
+          additionalProperties: true
+        detalles:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: DATOS_INCOMPLETOS
+            message:
+              type: string
+              example: usuarioId y productosComprados son obligatorios
