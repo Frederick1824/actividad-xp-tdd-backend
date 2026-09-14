@@ -1,12 +1,14 @@
-# Actividad Backend — Evolución XP + TDD + Prisma + Swagger
+# 🚀 Actividad Backend — XP + TDD + Prisma + Swagger
 
-Este repositorio continúa el backend trabajado en actividades anteriores y muestra su evolución incremental. La rama `unidad-2-prisma-swagger` incorpora persistencia relacional con PostgreSQL y Prisma ORM, checkout transaccional y documentación interactiva con OpenAPI y Swagger UI.
+Backend académico desarrollado de forma incremental, partiendo de un servidor HTTP simple y evolucionando hacia una API REST con arquitectura por capas, persistencia relacional, transacciones y documentación interactiva.
 
-## Evolución del proyecto
+> Rama de entrega: `unidad-2-prisma-swagger`
 
-La actividad comenzó con un servidor HTTP simple y luego pasó a una arquitectura por capas con Express y TypeScript. En esta nueva etapa se agrega persistencia real y documentación del contrato de la API.
+---
 
-Flujo actual:
+## 🧭 Evolución del proyecto
+
+Este repositorio conserva el recorrido completo de las actividades anteriores y suma, en esta etapa, persistencia real con PostgreSQL y Prisma ORM.
 
 ```text
 Cliente HTTP
@@ -22,21 +24,48 @@ Repository / Prisma
 PostgreSQL
 ```
 
-## Stack
+La idea principal fue **evolucionar el mismo backend**, sin crear un proyecto aislado para cada consigna.
+
+---
+
+## 🛠️ Tecnologías
 
 - TypeScript
 - Node.js
 - Express
 - PostgreSQL
 - Prisma ORM
-- OpenAPI
+- OpenAPI 3.1
 - Swagger UI
 - Vitest
 - Supertest
 
-## Persistencia con Prisma
+---
 
-La conexión se configura mediante la variable `DATABASE_URL` en un archivo `.env` local. El archivo `.env` no se versiona.
+## 🗃️ Modelo de datos
+
+El esquema Prisma define cuatro entidades principales:
+
+- `Usuario`
+- `Producto`
+- `Pedido`
+- `DetallePedido`
+
+Se incluyen claves primarias autoincrementales, tipos de datos, precios, stock y relaciones 1:N.
+
+```text
+Usuario 1 ─── N Pedido
+Pedido  1 ─── N DetallePedido
+Producto 1 ── N DetallePedido
+```
+
+---
+
+## 🔐 Configuración local
+
+La conexión a PostgreSQL se realiza mediante `DATABASE_URL` en un archivo `.env` local.
+
+El archivo `.env` está excluido del repositorio mediante `.gitignore`.
 
 Ejemplo disponible en `.env.example`:
 
@@ -45,16 +74,9 @@ DATABASE_URL="postgresql://usuario:password@localhost:5432/actividad_backend?sch
 PORT=3000
 ```
 
-El esquema Prisma define las entidades:
+---
 
-- `Usuario`
-- `Producto`
-- `Pedido`
-- `DetallePedido`
-
-con sus claves primarias, tipos de datos y relaciones 1:N.
-
-## Migraciones
+## 🧱 Prisma y migraciones
 
 Generar Prisma Client:
 
@@ -62,63 +84,128 @@ Generar Prisma Client:
 npx prisma generate
 ```
 
-Crear/aplicar una migración de desarrollo:
+Crear o aplicar la migración inicial:
 
 ```bash
 npx prisma migrate dev --name init
 ```
 
-## Datos de prueba
+La migración inicial se encuentra versionada en:
 
-El proyecto incluye `prisma/seed.ts` para cargar un usuario y productos de prueba.
+```text
+prisma/migrations/
+```
+
+---
+
+## 🌱 Datos de prueba
+
+El proyecto incluye un seed para cargar un usuario y productos de ejemplo.
 
 ```bash
 npx prisma db seed
 ```
 
-## Endpoint principal de la actividad
+Datos utilizados para validar el checkout:
 
-### POST `/api/pedidos`
+```text
+Usuario: Federico
+Producto 1: Teclado mecánico — $45.000 — stock 10
+Producto 2: Mouse inalámbrico — $25.000 — stock 15
+```
 
-Procesa un checkout completo.
+---
 
-Ejemplo de entrada:
+# 🛒 Endpoint principal
+
+## `POST /api/pedidos`
+
+Procesa un pedido completo y descuenta el stock dentro de una transacción de Prisma.
+
+### Request
 
 ```json
 {
   "usuarioId": 1,
   "productosComprados": [
-    { "productoId": 1, "cantidad": 2 },
-    { "productoId": 2, "cantidad": 1 }
+    {
+      "productoId": 1,
+      "cantidad": 2
+    },
+    {
+      "productoId": 2,
+      "cantidad": 1
+    }
   ]
 }
 ```
 
-Comportamiento:
+### Flujo del checkout
 
-- valida `usuarioId` y `productosComprados`;
-- crea el pedido;
-- consulta los productos solicitados;
-- valida stock disponible;
-- descuenta inventario;
-- crea los registros de `DetallePedido`;
-- calcula y actualiza el total;
-- devuelve `201 Created` si todo finaliza correctamente.
+1. valida `usuarioId` y `productosComprados`;
+2. verifica que exista el usuario;
+3. crea el pedido;
+4. busca los productos solicitados;
+5. valida el stock disponible;
+6. descuenta inventario;
+7. crea cada `DetallePedido`;
+8. calcula el total;
+9. actualiza el pedido;
+10. devuelve `201 Created`.
 
-## Transacción y rollback
+---
 
-El checkout utiliza `prisma.$transaction` para agrupar las operaciones. Si algún producto no dispone de stock suficiente se lanza un error y Prisma revierte la transacción, evitando pedidos incompletos o descuentos parciales de inventario.
+## 🔄 Transacción y rollback
 
-## Respuestas HTTP
+El checkout utiliza:
+
+```ts
+prisma.$transaction(...)
+```
+
+Todas las operaciones se ejecutan como una unidad.
+
+Si ocurre un error, por ejemplo stock insuficiente, la transacción se revierte automáticamente y evita estados inconsistentes como:
+
+- pedidos creados sin detalles;
+- stock descontado parcialmente;
+- totales incompletos.
+
+---
+
+## ✅ Prueba funcional realizada
+
+El endpoint fue ejecutado desde Swagger UI con los datos del seed y respondió correctamente:
+
+```text
+HTTP 201 Created
+```
+
+Para la compra de:
+
+```text
+2 × $45.000 = $90.000
+1 × $25.000 = $25.000
+────────────────────
+TOTAL         $115.000
+```
+
+La respuesta incluye el pedido creado, usuario, detalles y productos asociados.
+
+---
+
+## 📡 Respuestas HTTP
 
 | Código | Situación |
 |---|---|
 | `201` | Pedido creado correctamente |
-| `400` | Datos incompletos, inválidos o stock insuficiente |
-| `404` | Usuario o producto inexistente |
+| `400` | Datos incompletos, productos inválidos o stock insuficiente |
+| `404` | Usuario o producto no encontrado |
 | `500` | Error interno inesperado |
 
-## OpenAPI y Swagger
+---
+
+# 📚 OpenAPI + Swagger UI
 
 La especificación se encuentra en:
 
@@ -128,17 +215,49 @@ src/docs/openapi.yaml
 
 Swagger UI está integrado como middleware de Express.
 
-Con el servidor levantado, la documentación interactiva está disponible en:
+Con el servidor activo:
 
 ```text
-http://localhost:3000/docs
+http://localhost:3000/docs/
 ```
 
-Desde esa pantalla se puede revisar el contrato y ejecutar manualmente `POST /api/pedidos`.
+Desde allí se puede:
 
-## Endpoints heredados
+- revisar el contrato de `POST /api/pedidos`;
+- consultar schemas;
+- observar ejemplos de request y response;
+- ejecutar el endpoint directamente con **Try it out**.
 
-Se mantienen los endpoints de la iteración anterior:
+---
+
+## 🧪 Tests
+
+La suite automatizada heredada de la actividad anterior sigue disponible:
+
+```bash
+npm test
+```
+
+Resultado verificado:
+
+```text
+Test Files  1 passed
+Tests       8 passed
+```
+
+Validación de TypeScript:
+
+```bash
+npm run typecheck
+```
+
+Resultado: sin errores de tipos.
+
+---
+
+## 🧩 Endpoints heredados
+
+También se conservan los endpoints anteriores:
 
 | Método | Ruta |
 |---|---|
@@ -150,38 +269,13 @@ Se mantienen los endpoints de la iteración anterior:
 | `PATCH` | `/estudiantes/:id` |
 | `DELETE` | `/estudiantes/:id` |
 
-## Instalación y ejecución
+---
 
-```bash
-npm install
-npm run typecheck
-npm run dev
-```
-
-Servidor local:
-
-```text
-http://localhost:3000
-```
-
-Swagger UI:
-
-```text
-http://localhost:3000/docs
-```
-
-## Pruebas existentes
-
-La suite previa de estudiantes se conserva y puede ejecutarse con:
-
-```bash
-npm test
-```
-
-## Estructura principal
+## 📁 Estructura principal
 
 ```text
 prisma/
+├── migrations/
 ├── schema.prisma
 └── seed.ts
 
@@ -202,6 +296,47 @@ src/
     └── pedidos.service.ts
 ```
 
-## Conclusión
+---
 
-La actividad evoluciona el backend anterior sin crear un proyecto aislado. La nueva implementación reemplaza la persistencia simulada para las entidades comerciales por PostgreSQL mediante Prisma, protege el checkout con una transacción y documenta el contrato HTTP mediante OpenAPI y Swagger UI.
+## ▶️ Instalación y ejecución
+
+```bash
+npm install
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed
+npm run typecheck
+npm test
+npm run dev
+```
+
+Servidor:
+
+```text
+http://localhost:3000
+```
+
+Swagger:
+
+```text
+http://localhost:3000/docs/
+```
+
+---
+
+## 🎯 Resultado final
+
+La actividad muestra la evolución de un backend inicialmente simple hacia una API con:
+
+- arquitectura por capas;
+- PostgreSQL como base de datos relacional;
+- Prisma ORM;
+- migraciones versionadas;
+- repositorios con persistencia real;
+- checkout transaccional;
+- control de stock y rollback;
+- contrato OpenAPI;
+- Swagger UI;
+- pruebas automatizadas y validación de tipos.
+
+El objetivo no fue reemplazar el trabajo anterior, sino **hacer visible la evolución incremental del mismo proyecto**.
