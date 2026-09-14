@@ -1,4 +1,6 @@
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+import { openApiDocument } from "./docs/swagger.js";
 import { estudiantesRouter } from "./estudiantes/estudiantes.routes.js";
 import { pedidosRouter } from "./pedidos/pedidos.routes.js";
 
@@ -19,6 +21,7 @@ app.get("/hora", (_req, res) => {
   });
 });
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 app.use("/estudiantes", estudiantesRouter);
 app.use("/api/pedidos", pedidosRouter);
 
