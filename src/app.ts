@@ -1,5 +1,6 @@
 import express from "express";
 import { estudiantesRouter } from "./estudiantes/estudiantes.routes.js";
+import { pedidosRouter } from "./pedidos/pedidos.routes.js";
 
 export const app = express();
 
@@ -19,6 +20,7 @@ app.get("/hora", (_req, res) => {
 });
 
 app.use("/estudiantes", estudiantesRouter);
+app.use("/api/pedidos", pedidosRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
